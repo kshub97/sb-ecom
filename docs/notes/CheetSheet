@@ -26,3 +26,69 @@ Always send unquoted numbers in JSON when your Java field is numeric:
 use a custom deserializer in Spring Boot using Jackson to handle invalid/mixed inputs
 
 we can write RequestMapping for any get,post,put,delete it acts a base mapping.
+
+| Feature               | `CrudRepository` | `JpaRepository` (extends CrudRepository)        |
+| --------------------- | ---------------- | ----------------------------------------------- |
+| Basic CRUD operations | ✅ Yes            | ✅ Yes                                           |
+| Pagination & Sorting  | ❌ No             | ✅ Yes (`findAll(Pageable)` etc.)                |
+| JPA-specific features | ❌ No             | ✅ Yes (`flush()`, `saveAndFlush()` etc.)        |
+| Default use case      | Simple CRUD apps | Most real-world JPA use cases                   |
+| Extends               | —                | `PagingAndSortingRepository` → `CrudRepository` |
+
+✔️ Use CrudRepository when:
+    You only need basic Create, Read, Update, Delete
+    No pagination, sorting, or JPA-specific operations needed
+    Lightweight/simple apps or quick demos
+
+✔️ Use JpaRepository when:
+    You want pagination, sorting, or advanced JPA support
+    Need methods like findAll(Pageable), flush(), saveAndFlush(), etc.
+    Working with Spring Data JPA in a production-grade application
+
+Why is a no-arg constructor needed in JPA?
+    JPA (Java Persistence API) requires that every entity class has a public or protected no-argument constructor, for the following reasons:
+    When JPA (via Hibernate or any ORM) creates objects while reading from the database, it uses reflection.
+    It does not use your custom constructors — instead, it:
+    Instantiates the entity using the no-arg constructor Then sets fields one-by-one using reflection
+
+We should use @Valid (or @Validated) in the controller to trigger validation annotations
+like @NotBlank, @NotNull, @Size, etc., on your entity or DTO fields.
+
+Think of BindingResult as a summary of all validation errors.
+It holds:
+    What fields had issues
+    What were the error messages
+    What values were rejected
+
+Because we want field-specific messages, not just one general message so bindingResult.getFieldErrors()
+Returns a list of errors like: categoryName → "must not be blank" | categoryId → "must be greater than 0" etc.
+
+| Aspect                    | `ResponseStatusException`                                                   | Custom Exception (`MyCustomException`)                         |
+| ------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| ✅ Usage                  | Quickly throw an error with status + message                                | Define reusable, domain-specific exceptions                    |
+| 🔧 Flexibility            | Limited (no custom fields unless extended)                                  | High — can add custom fields, logic, etc.                      |
+| 📦 Built-in               | Yes (from `org.springframework.web.server`)                                 | No — you define your own                                       |
+| 🌐 Mapping to HTTP status | Directly includes `HttpStatus`                                              | Requires `@ExceptionHandler` or `@ResponseStatus`              |
+| 🧠 Ideal for...           | Simple validation or missing resources                                      | Business/domain errors (e.g., `InsufficientBalanceException`)  |
+| 🧵 Stack trace clarity    | Can feel generic in logs                                                    | Clear exception class name in trace                            |
+| 👨‍💻 Example usage          | `throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")` | `throw new UserNotFoundException("User with ID 10 not found")` |
+
+| Part                    | What Happens                            |
+| ----------------------- | --------------------------------------- |
+| `super(message)`        | Stores the message inside the exception |
+| `e.getMessage()`        | Retrieves that message in the handler   |
+| `ResponseEntity.body()` | Sends that message in the HTTP response |
+
+
+If checks are mentioned at Repository level method like findBycategoryName then those chekc in order will be thrown when error occur like notblank first then min/max size.
+
+| Exception Type              | Use When...                                    | HTTP Status |
+| --------------------------- | ---------------------------------------------- | ----------- |
+| `ResourceNotFoundException` | A specific item (ID, name) is not found        | `404`       |
+| `APIException`              | Business logic fails (duplicates, invalid ops) | `400`       |
+
+Use APIexception(general-purpose custom exception) when something goes wrong in your business logic, but it's not about a missing resource.
+Use Custom Exception when a specific resource (like a category, user, or product) is not found.
+
+
+
