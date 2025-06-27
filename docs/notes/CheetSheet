@@ -1,0 +1,28 @@
+The field names in JSON/postman body  → must match Java field names.
+Field types must be compatible (e.g., Long should not be passed as a string).
+If they don't match, you’ll get a 400 Bad Request or Spring won't populate the object.
+
+By default, Spring Boot uses Jackson, and it maps JSON → Java by matching JSON keys to Java field names.
+e.g. = private String categoryName;  {  "categoryName": "Electronics"     }
+
+If you want the JSON field to use a different name than your Java field, use:
+@JsonProperty("custom_name")    |{  "custom_name": "Electronics"  } //pass this in postman
+private String categoryName;    |
+
+If your Java field is declared as Long (or long) and you pass a String in the JSON for that field,
+Spring (via Jackson) will try to convert it.
+
+| Java Type           | JSON Value Type          | Example JSON Input             | Behavior                        |
+| ------------------- | ------------------------ | ------------------------------ | ------------------------------- |
+| `int` / `Integer`   | Number or numeric String | `"42"` or `42`                 | ✅ Converted to `int`            |
+| `long` / `Long`     | Number or numeric String | `"10000"` or `10000`           | ✅ Converted to `long`           |
+| `double` / `Double` | Number or numeric String | `"12.34"` or `12.34`           | ✅ Converted to `double`         |
+| `float` / `Float`   | Number or numeric String | `"3.14"` or `3.14`             | ✅ Converted to `float`          |
+| `BigDecimal`        | Number or numeric String | `"123456.789"` or `123456.789` | ✅ Converted to `BigDecimal`     |
+| `int` / `long` etc. | Non-numeric String       | `"abc"`, `"ten"`               | ❌ Will throw a conversion error |
+
+Always send unquoted numbers in JSON when your Java field is numeric:
+
+use a custom deserializer in Spring Boot using Jackson to handle invalid/mixed inputs
+
+we can write RequestMapping for any get,post,put,delete it acts a base mapping.
