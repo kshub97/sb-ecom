@@ -90,5 +90,12 @@ If checks are mentioned at Repository level method like findBycategoryName then 
 Use APIexception(general-purpose custom exception) when something goes wrong in your business logic, but it's not about a missing resource.
 Use Custom Exception when a specific resource (like a category, user, or product) is not found.
 
+✅ Real-Life Analogy
+Imagine you're running an e-commerce API:
+ResourceNotFoundException → “Product with ID 91 not found” → clearly a missing thing
+APIException → “Discount cannot be more than 100%” → the user did something illogical
+They are both problems, but very different types of problems.
+
+
 
 
