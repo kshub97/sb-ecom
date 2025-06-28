@@ -97,5 +97,59 @@ APIException → “Discount cannot be more than 100%” → the user did someth
 They are both problems, but very different types of problems.
 
 
+No, controller should not expose or accept entities directly in a real-world API.
+DTO → Entity (in service), and Entity → DTO (for response) keeps things clean, secure, and maintainable.
+
+Applications often consist of similar but different object models, where the data in two models may be similar but
+the structure and concerns of the models are different. Object mapping makes it easy to convert one model to another,
+allowing separate models to remain segregated, so model mapper used.
+
+ModelMapper is just a tool to help you automatically convert between:
+Entity ⟷ DTO
+
+Let’s say you’re converting manually:
+    UserResponseDTO dto = new UserResponseDTO();
+    dto.setId(user.getId());
+    dto.setName(user.getName());
+    dto.setEmail(user.getEmail());
+
+🔁 With ModelMapper:
+    ModelMapper mapper = new ModelMapper();
+    UserResponseDTO dto = mapper.map(user, UserResponseDTO.class);
+
+🔄 Think of ModelMapper as a 2-way converter:
+    | Use Case                          | Mapping                |
+    | --------------------------------- | ---------------------- |
+    | **Create/Update (POST/PUT)**      | `RequestDTO ➜ Entity`  |
+    | **Read (GET) or Return Response** | `Entity ➜ ResponseDTO` |
+
+📘 @PathVariable vs @RequestParam – Use Case Comparison
+   | 🎯 **Use Case**                                | ✅ **Use**      | 📘 **When to Use**                                                   | 🔍 **Example URL**                       |
+   | ---------------------------------------------- | --------------- | -------------------------------------------------------------------- | ---------------------------------------- |
+   | Fetch a specific resource by ID                | `@PathVariable` | When identifying a single item (RESTful resource)                    | `/categories/5`                          |
+   | Filter/search data based on criteria           | `@RequestParam` | When applying filters like name, status, etc.                        | `/categories?name=Electronics`           |
+   | Pass optional values                           | `@RequestParam` | When parameters are not mandatory                                    | `/products?discounted=true`              |
+   | RESTful endpoint design                        | `@PathVariable` | When URL structure should represent hierarchy/resources clearly      | `/users/10/orders/7`                     |
+   | Implement pagination                           | `@RequestParam` | When passing page number, size, sort, etc.                           | `/products?page=1&size=10`               |
+   | Sorting or ordering results                    | `@RequestParam` | When user can request sorting dynamically                            | `/products?sortBy=price&order=desc`      |
+   | Handling fixed structured URL paths            | `@PathVariable` | When the URL pattern is consistent and mapped to data model directly | `/orders/1234/status`                    |
+   | Handling dynamic and optional input parameters | `@RequestParam` | When you want to customize what to include in the query              | `/orders/search?status=shipped&type=COD` |
+
+✅ Why do we use both Pageable and Page<T>?
+    | Term       | Purpose                                                                                  |
+    | ---------- | ---------------------------------------------------------------------------------------- |
+    | `Pageable` | Used to **pass input** (page number, size, sort) to repository methods                   |
+    | `Page<T>`  | Used to **get output** — the actual **content + metadata** like total pages, total items |
+Pageable pageable = PageRequest.of(pageNumber, pageSize); // You pass this IN
+Page<Category> page = categoryRepository.findAll(pageable); // You get this OUT
+
+Every change in sortBy, sortOrder, pageNumber, or pageSize = new DB query
+Server doesn’t remember old state — each request is stateless
+Spring handles pagination + sorting with zero boilerplate , can see console add in application.properties files to see logs SQL query are doing this sorting and all while
+making DB call.
+
+
+
+
 
 
