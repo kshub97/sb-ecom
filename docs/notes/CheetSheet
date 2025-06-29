@@ -96,6 +96,8 @@ ResourceNotFoundException → “Product with ID 91 not found” → clearly a m
 APIException → “Discount cannot be more than 100%” → the user did something illogical
 They are both problems, but very different types of problems.
 
+To ensure that validation happens before persistence, put the validation annotations in your DTO, not in the entity
+keep entity clean all validation , @valid and all put in DTO:
 
 No, controller should not expose or accept entities directly in a real-world API.
 DTO → Entity (in service), and Entity → DTO (for response) keeps things clean, secure, and maintainable.
@@ -148,6 +150,99 @@ Server doesn’t remember old state — each request is stateless
 Spring handles pagination + sorting with zero boilerplate , can see console add in application.properties files to see logs SQL query are doing this sorting and all while
 making DB call.
 
+join specify column name , we can enter.
+if use mapped by then no need to specify in both entity linkage
+
+
+| Annotation              | Use when you…                                                                            |
+| ----------------------- | ---------------------------------------------------------------------------------------- |
+| `@JsonIgnore`           | Want to completely skip that field from being serialized in JSON. Most common, simplest. |
+| `@JsonManagedReference` | Use on the **parent/owning** side (usually the one with `@OneToMany`)                    |
+| `@JsonBackReference`    | Use on the **child/back** side (usually `@ManyToOne`) — this is ignored in JSON          |
+
+✅ Best Practice
+If you're unsure or want to avoid this complexity altogether:
+🔁 Use DTOs (Data Transfer Objects) for responses
+✅ They give full control over what fields to include
+
+🔄 What is a Circular Reference in Java/Spring Boot?
+A circular reference happens when two objects reference each other in a loop — this becomes problematic especially during JSON serialization.
+
+@Entity
+public class Post {
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<Comment> comments;
+}
+
+@Entity
+public class Comment {
+    @ManyToOne
+    @JoinColumn(name = "post_id")
+    private Post post;
+}
+
+🔁 When Returned as JSON:
+When you return a Post, it contains comments, and each Comment contains the post again, and again...
+Post {
+  comments: [
+    { post: { comments: [...] } }
+  ]
+}
+This leads to:
+❌ StackOverflowError
+❌ "Infinite recursion" error in Postman / console logs
+
+
+🔄 Relationship Summary
+
+| Relationship  | Example (A → B)      | Cardinality | Use When...                  |
+| ------------- | -------------------- | ----------- | ---------------------------- |
+| `@OneToOne`   | User → Profile       | 1 to 1      | One item linked to one other |
+| `@OneToMany`  | Post → List<Comment> | 1 to many   | One item to many             |
+| `@ManyToOne`  | Comment → Post       | many to 1   | Many items belong to one     |
+| `@ManyToMany` | Student ↔ Course     | many ↔ many | Students take many courses   |
+
+Default Values by Relationship:
+
+| Relationship  | Default Fetch Type |
+| ------------- | ------------------ |
+| `@OneToMany`  | LAZY               |
+| `@ManyToMany` | LAZY               |
+| `@ManyToOne`  | EAGER              |
+| `@OneToOne`   | EAGER              |
+
+
+🔷 3. FetchType (LAZY vs EAGER)
+| FetchType | Meaning                                                          |
+| --------- | ---------------------------------------------------------------- |
+| `EAGER`   | Loads child entities **immediately** with the parent             |
+| `LAZY`    | Loads child **only when accessed** (recommended for collections) |
+
+
+@OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+private List<Comment> comments;
+When you save/delete a Post, the associated Comments will also be saved/deleted.
+
+🔶 2. Cascade Types Cheat Sheet
+| CascadeType | What it does                                                    |
+| ----------- | --------------------------------------------------------------- |
+| `ALL`       | Applies **all** cascade options below                           |
+| `PERSIST`   | Saves child when parent is saved                                |
+| `MERGE`     | Updates child when parent is updated                            |
+| `REMOVE`    | Deletes child when parent is deleted                            |
+| `REFRESH`   | Refreshes child when parent is refreshed                        |
+| `DETACH`    | Detaches child from persistence context when parent is detached |
+
+🔷 1. @JsonIgnore
+Purpose: To prevent infinite recursion when serializing bidirectional relationships to JSON (especially when using @OneToMany and @ManyToOne).
+
+ you don’t need to explicitly mark your anyRepository with @Repository if you're extending JpaRepository.
+ Spring Boot auto-scans interfaces that extend JpaRepository, CrudRepository, etc. and automatically registers them as Spring beans behind the scenes.
+
+
+🔍 When Should You Use @Repository Explicitly?
+ If you're not extending JpaRepository or CrudRepository, and you're writing a custom repository class with queries using @PersistenceContext and EntityManager.
+ If you're adding custom exception translation or want to be super explicit.
 
 
 

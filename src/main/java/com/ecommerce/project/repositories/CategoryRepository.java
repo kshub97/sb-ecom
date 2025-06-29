@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CategoryRepository extends JpaRepository<Category,Long>{
 
-    Category findByCategoryName(@NotBlank(message = "CategoryName must not be blank/empty") @Size(min = 5,message = "CategoryName should be at least 5 characters") String categoryName);
+    Category findByCategoryName(String categoryName);
 }
