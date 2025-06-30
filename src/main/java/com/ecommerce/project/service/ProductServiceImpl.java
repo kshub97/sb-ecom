@@ -99,7 +99,7 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
-    public ProductResponseDTO searchProductByKeyword(Integer pageNumber, Integer pageSize, String sortOrder, String sortBy,String keyword) {
+    public ProductResponseDTO searchProductByKeyword(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder,String keyword) {
         Sort sortByAndOrder=sortOrder.equalsIgnoreCase("asc")
                 ?Sort.by(sortBy).ascending():Sort.by(sortBy).descending();
         Pageable pageDetails= PageRequest.of(pageNumber,pageSize,sortByAndOrder);
