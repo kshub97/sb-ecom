@@ -9,15 +9,16 @@ import java.io.IOException;
 public interface ProductService {
     ProductRequestDTO addProduct(Long categoryId, ProductRequestDTO productRequestDTO);
 
-    ProductResponseDTO getAllProducts();
+    ProductResponseDTO getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
 
-    ProductResponseDTO searchByCategory(Long categoryId);
+    ProductResponseDTO searchByCategory(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder, Long categoryId);
 
-    ProductResponseDTO searchProductByKeyword(String keyword);
+    ProductResponseDTO searchProductByKeyword(Integer pageNumber, Integer pageSize, String sortOrder , String sortBy, String keyword);
 
     ProductRequestDTO updateProduct(Long productId, ProductRequestDTO productRequestDTO);
 
     ProductRequestDTO deleteProduct(Long productId);
 
     ProductRequestDTO updateProductImage(Long productId, MultipartFile file) throws IOException;
+
 }

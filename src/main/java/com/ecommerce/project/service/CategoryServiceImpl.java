@@ -30,8 +30,8 @@ public class CategoryServiceImpl implements CategoryService{
     public CategoryResponseDTO getAllCategories(Integer pageNumber, Integer pageSize,String sortOrder, String sortBy) {
         Sort sortByAndOrder=sortOrder.equalsIgnoreCase("asc")
                             ?Sort.by(sortBy).ascending():Sort.by(sortBy).descending();
-        Pageable pageable= PageRequest.of(pageNumber,pageSize,sortByAndOrder);
-        Page categoryPage= categoryRepository.findAll(pageable);
+        Pageable pageDetails= PageRequest.of(pageNumber,pageSize,sortByAndOrder);
+        Page categoryPage= categoryRepository.findAll(pageDetails);
         List<Category> categoryList = categoryPage.getContent();
         if (categoryList.isEmpty())
            throw new APIException("No Category exist, Please create new category");
