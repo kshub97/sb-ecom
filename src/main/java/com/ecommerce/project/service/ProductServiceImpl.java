@@ -9,8 +9,11 @@ import com.ecommerce.project.repositories.CategoryRepository;
 import com.ecommerce.project.repositories.ProductRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -24,6 +27,12 @@ public class ProductServiceImpl implements ProductService{
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private FileService fileService;
+
+    @Value("${project.upload.path}")
+    private  String path;
 
     @Override
     public ProductRequestDTO addProduct(Long categoryId, ProductRequestDTO productRequestDTO) {
@@ -89,6 +98,16 @@ public class ProductServiceImpl implements ProductService{
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "ProductId", productId));
         productRepository.delete(productFromDb);
         return modelMapper.map(productFromDb,ProductRequestDTO.class);
+    }
+
+    @Override
+    public ProductRequestDTO updateProductImage(Long productId, MultipartFile file) throws IOException {
+        Product productFromDb = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "ProductId", productId));
+        String fileName = fileService.uploadImages(path,file);
+        productFromDb.setImage(fileName);
+        Product savedProduct = productRepository.save(productFromDb);
+        return modelMapper.map(savedProduct,ProductRequestDTO.class);
     }
 
 }

@@ -244,7 +244,22 @@ Purpose: To prevent infinite recursion when serializing bidirectional relationsh
  If you're not extending JpaRepository or CrudRepository, and you're writing a custom repository class with queries using @PersistenceContext and EntityManager.
  If you're adding custom exception translation or want to be super explicit.
 
+📌 What is StandardCopyOption.REPLACE_EXISTING?
+When using Files.copy(...), Java needs to know:“What should I do if the file already exists at the destination?”
+That’s where StandardCopyOption.REPLACE_EXISTING comes in.
+➡️ If the file already exists at targetPath, Java will throw:FileAlreadyExistsException
+🛡️ With REPLACE_EXISTING: Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+➡️ It silently overwrites the existing file with the new one.
+
+💡 When to use?
+
+| Scenario                            | Use `REPLACE_EXISTING`? | Why                                                          |
+| ----------------------------------- | ----------------------- | ------------------------------------------------------------ |
+| Always want latest image uploaded   | ✅ Yes                   | New image should replace the old one                         |
+| Want to keep all uploads unique     | ❌ No                    | Better to create unique file names (like using UUID in name) |
+| Accidentally reusing same file name | ✅ Safe                  | Prevents `FileAlreadyExistsException`                        |
 
 
+@Value is a Spring annotation used to inject values into fields from:
 
 
