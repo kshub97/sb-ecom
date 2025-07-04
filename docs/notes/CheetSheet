@@ -262,4 +262,50 @@ That’s where StandardCopyOption.REPLACE_EXISTING comes in.
 
 @Value is a Spring annotation used to inject values into fields from:
 
+@JoinTable(name = "user_role", // join table between user and role
+    joinColumns = @JoinColumn(name = "user_id"), // foreign key referring to User
+    inverseJoinColumns = @JoinColumn(name = "role_id") // foreign key referring to Role
+    name = "user_role" → The join/intermediate table name will be user_role.
+    joinColumns = @JoinColumn(name = "user_id") → This is a foreign key in user_role pointing to the User table (user_id).
+    inverseJoinColumns = @JoinColumn(name = "role_id") → This is a foreign key in user_role pointing to the Role table (role_id).
+    user_id and role_id are foreign keys.The user_role table is a many-to-many bridge table.
+
+#cascade = {CascadeType.PERSIST, CascadeType.MERGE}
+    | Cascade Type         | What it does                                                                        |
+    | -------------------- | ----------------------------------------------------------------------------------- |
+    | `PERSIST`            | When a **new `User` is saved**, any **new `Role` in the set** will also be saved.   |
+    | `MERGE`              | When a `User` is updated/merged, it will **propagate changes** to `Role` if needed. |
+    | ❌ Not used: `REMOVE` | So deleting a user won't delete roles (which is good).                              |
+
+ #fetch = FetchType.EAGER-> Means: When you load a User, its associated roles will also be fetched immediately.
+
+ #orphanRemoval = true:
+ If you remove a product from the products set (and it’s no longer associated with any other user), it will be automatically deleted from the database.
+
+   🧠 Summary Table
+     | Side        | Annotation Use                        | Notes                                 |
+     | ----------- | ------------------------------------- | ------------------------------------- |
+     | **Owner**   | `@ManyToMany + @JoinTable(...)`       | Owns the relationship, controls DB    |
+     | **Inverse** | `@ManyToMany(mappedBy = "addresses")` | Refers to the field on the owner side |
+
+ ##### 🔥 Simple Analogy:
+    Think of a remote control and a TV.The remote controls the TV.But the remote is in your hand — you decide what happens.
+
+#####  Now in JPA:
+    The entity that holds the foreign key is the one that "holds the remote" — i.e., it's in control.
+    The mappedBy side is the mirror, like the TV — it responds but doesn’t hold the actual switch.
+
+##### If mappedBy = "product" is used on other side		❌ Not owner	❌ No FK column
+      🧠 Tip:
+        @JoinColumn = "I own the FK",    mappedBy = "I'm the inverse, other side owns it"
+
+#####  @JoinTable is meant for @ManyToMany relationships — where a third join table is needed to link two entities
+#####  ✅ For @ManyToOne or @OneToOne: @JoinColumn → it directly creates a foreign key in the child table.
+##### If i write this in Product entity class : @JoinColumn(name = "category_id") annotation says:
+                “In the table for this entity (Product), add a column category_id that references the Category table.”
+
+***** FK Lives Where @JoinColumn Is! 💬 “If I write @JoinColumn, I am saying: Put the foreign key in my table.”
+
+
+
 
