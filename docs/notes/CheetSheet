@@ -419,7 +419,26 @@ but This is necessary when you’re providing a custom UserDetailsService like: 
       "Oh, there's a UserDetailsService bean. I’ll use that with a default DaoAuthenticationProvider."
       @Bean  public UserDetailsService userDetailsService() { return new JdbcUserDetailsManager(dataSource); }
 
+    #### 🧠 Spring Boot JWT + Cookie Auth Cheat Sheet##
+Cookies are attached by the browser.| You wrote a filter that checks each request for a cookie → validates it → sets user as authenticated.
+Spring Security sees that the user is already authenticated in SecurityContextHolder.
+# 🔁 Authentication Flow
+    [Client] → /api/auth/signin (username + password)
+            → [Server]
+              - Authenticates using AuthenticationManager
+              - Generates JWT
+              - Sends JWT in Response Cookie
 
+    [Client] ← HTTP 200 OK with Set-Cookie: jwt=...
+
+    [Client] → Any /api/secure-endpoint (JWT sent in Cookie)
+            → [Server]
+              - Filter reads JWT from cookie
+              - Validates token
+              - Loads user
+              - Sets Authentication in SecurityContextHolder
+
+ ## .httpOnly(true) → to prevent JS access | .secure(true) → only sent over HTTPS
 
 
 

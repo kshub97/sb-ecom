@@ -51,7 +51,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
                 // 🆔 Create authentication object
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken
-                        (userNameFromJwtToken, null, userDetails.getAuthorities());
+                        (userDetails, null, userDetails.getAuthorities());
                 logger.debug("Roles from JWT: {}", userDetails.getAuthorities());
 
                 // 📌 Attach request details to auth
@@ -70,7 +70,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     }
 
     private String parseJwt(HttpServletRequest request) {
-        String jwtFromHeader = jwtUtils.getJwtFromHeader(request);
+        String jwtFromHeader = jwtUtils.getJwtFromCookies(request);
         logger.debug("AuthTokenFilter.java: {}", jwtFromHeader);
         return  jwtFromHeader;
     }
