@@ -137,7 +137,7 @@ public class AuthController {
                 .map(grantedAuthority -> grantedAuthority.getAuthority()).toList();
 
         //setting jwt from cookie to string so in response no null for jwt field shows
-        UserInfoResponse response=new UserInfoResponse(userDetails.getId(), userDetails.getUsername(),roles);
+        UserInfoResponse response=new UserInfoResponse(userDetails.getId(), userDetails.getUsername(),roles, jwtCookie.getValue());
 
 
         return ResponseEntity.ok().body(response);
