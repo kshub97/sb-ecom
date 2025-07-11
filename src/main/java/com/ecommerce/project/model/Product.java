@@ -22,7 +22,7 @@ public class Product {
     private Long productId;
     private String productName;
     private String description;
-    private Integer quantity;
+    private Integer stockQuantity;
     private String image;
     private Double price;
     private Double discount;

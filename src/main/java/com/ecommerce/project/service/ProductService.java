@@ -1,13 +1,13 @@
 package com.ecommerce.project.service;
 
-import com.ecommerce.project.payload.ProductRequestDTO;
+import com.ecommerce.project.payload.ProductDTO;
 import com.ecommerce.project.payload.ProductResponseDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
 public interface ProductService {
-    ProductRequestDTO addProduct(Long categoryId, ProductRequestDTO productRequestDTO);
+    ProductDTO addProduct(Long categoryId, ProductDTO productDTO);
 
     ProductResponseDTO getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
 
@@ -15,10 +15,10 @@ public interface ProductService {
 
     ProductResponseDTO searchProductByKeyword(Integer pageNumber, Integer pageSize, String sortOrder , String sortBy, String keyword);
 
-    ProductRequestDTO updateProduct(Long productId, ProductRequestDTO productRequestDTO);
+    ProductDTO updateProduct(Long productId, ProductDTO productDTO);
 
-    ProductRequestDTO deleteProduct(Long productId);
+    ProductDTO deleteProduct(Long productId);
 
-    ProductRequestDTO updateProductImage(Long productId, MultipartFile file) throws IOException;
+    ProductDTO updateProductImage(Long productId, MultipartFile file) throws IOException;
 
 }

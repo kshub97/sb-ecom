@@ -1,8 +1,7 @@
 package com.ecommerce.project.controller;
 
 import com.ecommerce.project.configuration.AppConstants;
-import com.ecommerce.project.model.Product;
-import com.ecommerce.project.payload.ProductRequestDTO;
+import com.ecommerce.project.payload.ProductDTO;
 import com.ecommerce.project.payload.ProductResponseDTO;
 import com.ecommerce.project.service.ProductService;
 import jakarta.validation.Valid;
@@ -22,9 +21,9 @@ public class ProductController {
     private ProductService productService;
 
     @PostMapping("/admin/categories/{categoryId}/product")
-    public ResponseEntity<ProductRequestDTO> addProduct(@Valid @RequestBody ProductRequestDTO productRequestDTO,
-                                                        @PathVariable Long categoryId){
-        ProductRequestDTO addedProduct = productService.addProduct(categoryId, productRequestDTO);
+    public ResponseEntity<ProductDTO> addProduct(@Valid @RequestBody ProductDTO productDTO,
+                                                 @PathVariable Long categoryId){
+        ProductDTO addedProduct = productService.addProduct(categoryId, productDTO);
         return new ResponseEntity<>(addedProduct, HttpStatus.CREATED);
     }
 
@@ -58,23 +57,23 @@ public class ProductController {
     }
 
     @PutMapping("/admin/products/{productId}")
-    public ResponseEntity<ProductRequestDTO> updateProduct(@Valid @RequestBody ProductRequestDTO productRequestDTO,
-                                                            @PathVariable Long productId){
-        ProductRequestDTO savedProduct = productService.updateProduct(productId,productRequestDTO);
+    public ResponseEntity<ProductDTO> updateProduct(@Valid @RequestBody ProductDTO productDTO,
+                                                    @PathVariable Long productId){
+        ProductDTO savedProduct = productService.updateProduct(productId, productDTO);
         return new ResponseEntity<>(savedProduct, HttpStatus.OK);
     }
 
     @DeleteMapping("/admin/products/{productId}")
-    public ResponseEntity<ProductRequestDTO> deleteProduct(@PathVariable Long productId){
-        ProductRequestDTO deletedProduct = productService.deleteProduct(productId);
+    public ResponseEntity<ProductDTO> deleteProduct(@PathVariable Long productId){
+        ProductDTO deletedProduct = productService.deleteProduct(productId);
         return new ResponseEntity<>(deletedProduct, HttpStatus.OK);
     }
 
 
     @PutMapping("/products/{productId}/image")
-    public  ResponseEntity<ProductRequestDTO> updateProductImage(@PathVariable Long productId,
-                                                             @RequestParam("image")MultipartFile file) throws IOException {
-        ProductRequestDTO updatedProduct = productService.updateProductImage(productId,file);
+    public  ResponseEntity<ProductDTO> updateProductImage(@PathVariable Long productId,
+                                                          @RequestParam("image")MultipartFile file) throws IOException {
+        ProductDTO updatedProduct = productService.updateProductImage(productId,file);
         return new ResponseEntity<>(updatedProduct,HttpStatus.OK);
 
     }

@@ -478,7 +478,17 @@ Spring Security sees that the user is already authenticated in SecurityContextHo
     — meaning all operations within the method either complete successfully together or are rolled back together if any error occurs.
     If @Transactional is on a public method, it works correctly.
    ✅ Use Cases
-   Modifying queries (UPDATE, DELETE, INSERT) | Grouping multiple repository calls into one unit of work | Ensuring consistency when writing to multiple tables
+   Modifying queries (UPDATE, DELETE, INSERT) | Grouping multiple repository calls into one unit of work | Ensuring consistency when writing to multiple tables.
+
+# @ManyToOne cannot have mappedBy — mappedBy is only allowed on @OneToOne or @OneToMany, i.e., on the inverse side.
+
+# Product info is not passed again during checkout because it's already in the cart
+  When a user:
+      Adds products to cart → Product info is saved as CartItems.
+      Goes to checkout → You don’t pass product info again. Instead, your backend:
+      Fetches the user's cart (using authUtil.loggedInEmail()).
+      Reads the cartItems (which contain Product, quantity, price, etc.).
+      Converts each CartItem into an OrderItem.
 
 
 

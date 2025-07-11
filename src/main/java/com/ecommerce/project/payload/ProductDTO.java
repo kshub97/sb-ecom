@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductRequestDTO {
+public class ProductDTO {
     private Long productId;
 
     @NotBlank(message = "productName must not be blank/empty")
@@ -20,7 +20,7 @@ public class ProductRequestDTO {
     @NotBlank(message = "description must not be blank/empty")
     @Size(min = 6,message = "description should be at least 6 characters")
     private String description;
-    private Integer quantity;
+    private Integer stockQuantity;
     private String image; // or use MultipartFile if uploading
     private Double discount;
     private Double specialPrice;
