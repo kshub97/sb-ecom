@@ -36,8 +36,8 @@ public class JwtUtils {
     @Value("${spring.app.jwtSecret}")
     private String jwtSecret; //the secret key used to sign and verify tokens
 
-    //Getting JWT from header
-/*    public String getJwtFromHeader(HttpServletRequest request){
+    //Getting JWT from header (needed for swagger)
+    public String getJwtFromHeader(HttpServletRequest request){
         String bearerToken = request.getHeader("Authorization");
         logger.debug("Authorization Header: {}",bearerToken);
         if (bearerToken!=null && bearerToken.startsWith("Bearer")){
@@ -45,7 +45,7 @@ public class JwtUtils {
         }
 
         return null;
-    }*/
+    }
 
     public String getJwtFromCookies(HttpServletRequest request){
         Cookie cookie = WebUtils.getCookie(request, jwtCookieName);
