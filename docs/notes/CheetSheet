@@ -552,8 +552,14 @@ Spring Security sees that the user is already authenticated in SecurityContextHo
 
  # Access this in postman ->Beanstalk URL: http://<env-name>.<region>.elasticbeanstalk.com
 
+#    Specification / Criteria API Approach
+          //You build filters dynamically at runtime.Easy to combine multiple optional filters using .and() / .or().
+          //Works nicely with pagination and sorting via Pageable.More maintainable for complex filtering scenarios.
+          //Dynamic sorting is tricky — JPQL doesn’t allow dynamic ORDER BY easily without Specification or Criteria API.
 
-
+# 💡 Rule of Thumb
+  Few fixed filters → JPQL / @Query is fine.
+  Many optional filters / dynamic sorting → Specification is better.
 
 
 

@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -60,13 +61,31 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
-    public ProductResponseDTO getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+    public ProductResponseDTO getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder, String keyword, String category) {
+        // Create Pageable with dynamic sorting
         Sort sortByAndOrder=sortOrder.equalsIgnoreCase("asc")
                 ?Sort.by(sortBy).ascending():Sort.by(sortBy).descending();
         Pageable pageDetails= PageRequest.of(pageNumber,pageSize,sortByAndOrder);
-        Page<Product> productPages = productRepository.findAll(pageDetails);
+        // Build dynamic specifications
+            //You build filters dynamically at runtime.Easy to combine multiple optional filters using .and() / .or().
+            //Works nicely with pagination and sorting via Pageable.More maintainable for complex filtering scenarios.
+            //Dynamic sorting is tricky — JPQL doesn’t allow dynamic ORDER BY easily without Specification or Criteria API.
+        Specification<Product> spec = null;
+        if (keyword!=null && !keyword.isEmpty()){
+           spec = (root, query, criteriaBuilder) ->
+                    criteriaBuilder.like((criteriaBuilder.lower(root.get("productName"))),"%"+ keyword.toLowerCase() + "%");
+        }
+        if (category!=null && !category.isEmpty()){
+           spec =  (root, query, criteriaBuilder) ->
+                    criteriaBuilder.like((root.get("category").get("categoryName")),category);
+        }
+
+        // Fetch page from repository
+        Page<Product> productPages = productRepository.findAll(spec,pageDetails);  //keep 1st arg as specification as it is expected in JpaSpecification
         List<Product> productPagesContent = productPages.getContent();
         if (productPagesContent.isEmpty()) throw new APIException("No product exists!");
+
+        // Map entities to DTOs
         List<ProductDTO> productDTOS = productPagesContent.stream().map(
                         product -> {
                             ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
@@ -74,6 +93,8 @@ public class ProductServiceImpl implements ProductService{
                             return productDTO;
                         }
                 ).toList();
+
+        // Prepare response
         ProductResponseDTO productResponseDTO = new ProductResponseDTO();
         productResponseDTO.setContent(productDTOS);
         productResponseDTO.setPageNumber(productPages.getNumber());
