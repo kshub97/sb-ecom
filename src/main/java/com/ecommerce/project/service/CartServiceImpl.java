@@ -6,6 +6,7 @@ import com.ecommerce.project.model.Cart;
 import com.ecommerce.project.model.CartItem;
 import com.ecommerce.project.model.Product;
 import com.ecommerce.project.payload.CartDTO;
+import com.ecommerce.project.payload.CartItemDTO;
 import com.ecommerce.project.payload.ProductDTO;
 import com.ecommerce.project.repositories.CartItemRepository;
 import com.ecommerce.project.repositories.CartRepository;
@@ -17,10 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Service
 public class CartServiceImpl implements CartService{
+
 
     @Autowired
     private CartRepository cartRepository;
@@ -234,4 +237,57 @@ public class CartServiceImpl implements CartService{
         });
         return productStream;
     }
+
+    @Transactional
+    @Override
+    public String createOrUpdateCartWithItems(List<CartItemDTO> cartsItems) {
+
+
+        //Get user email
+        String emailId = authUtil.loggedInEmail();
+
+        //check if existing cart is available
+        Cart existingCart = cartRepository.findCartByEmail(emailId);
+
+        //clear all current items in the existing cart  else create new cart
+        if (existingCart != null){
+            cartItemRepository.deleteAllByCartId(existingCart.getCartId());
+        }else {
+           existingCart = new Cart();
+           existingCart.setTotalPrice(0.00);
+           existingCart.setUser(authUtil.loggedInUser());
+           existingCart = cartRepository.save(existingCart);
+        }
+
+        Double totalPrice = 0.00;
+        //Process each item in the request to add to the cart
+        for (CartItemDTO cartItemDTO : cartsItems){
+            Long productId = cartItemDTO.getProductId();
+            Integer quantity = cartItemDTO.getQuantity();
+
+            //Find the product by productId
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+
+            //Directly update product stock , total price
+            //product.setStockQuantity(product.getStockQuantity() - quantity); user might not place order , update it after order placed.
+            totalPrice += product.getSpecialPrice() * quantity;
+
+            //Create and save cart item
+            CartItem cartItem = new CartItem();
+            cartItem.setProduct(product);
+            cartItem.setCart(existingCart);
+            cartItem.setQuantity(quantity);
+            cartItem.setProductPrice(product.getSpecialPrice());
+            cartItem.setDiscount(product.getDiscount());
+            cartItemRepository.save(cartItem);
+        }
+
+            //update cart total price and save
+            existingCart.setTotalPrice(totalPrice);
+            cartRepository.save(existingCart);
+
+        return "Cart created/updated with new items";
+    }
+
 }

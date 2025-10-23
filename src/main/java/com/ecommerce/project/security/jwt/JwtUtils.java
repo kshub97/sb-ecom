@@ -49,6 +49,9 @@ public class JwtUtils {
 
     public String getJwtFromCookies(HttpServletRequest request){
         Cookie cookie = WebUtils.getCookie(request, jwtCookieName);
+        logger.debug("AuthTokenFilter called for URI: {}", request.getRequestURI());
+        logger.debug("JWT from cookie: {}", cookie);
+
         if (cookie!=null){
             return cookie.getValue();
         }
@@ -60,8 +63,10 @@ public class JwtUtils {
         // Create Response Cookie
         ResponseCookie responseCookie = ResponseCookie.from(jwtCookieName,jwt)
                 .path("/api")
+
                 .maxAge(24 * 60 * 60)
                 .httpOnly(false)
+                .sameSite("Lax")
                 .secure(false)
                 .build();
         return responseCookie;

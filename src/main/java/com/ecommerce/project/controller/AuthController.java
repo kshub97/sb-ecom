@@ -74,7 +74,7 @@ public class AuthController {
                 .map(grantedAuthority -> grantedAuthority.getAuthority()).toList();
 
         //setting jwt from cookie to string so in response no null for jwt field shows
-        UserInfoResponse response=new UserInfoResponse(userDetails.getId(), userDetails.getUsername(),roles, jwtCookie.getValue());
+        UserInfoResponse response=new UserInfoResponse(userDetails.getId(), userDetails.getUsername(),  userDetails.getEmail(), roles, jwtCookie.getValue());
 
         //here in response header we are setting cookie
         return  ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, String.valueOf(jwtCookie)).body(response);
@@ -137,7 +137,7 @@ public class AuthController {
                 .map(grantedAuthority -> grantedAuthority.getAuthority()).toList();
 
         //setting jwt from cookie to string so in response no null for jwt field shows
-        UserInfoResponse response=new UserInfoResponse(userDetails.getId(), userDetails.getUsername(),roles, jwtCookie.getValue());
+        UserInfoResponse response=new UserInfoResponse(userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles, jwtCookie.getValue());
 
 
         return ResponseEntity.ok().body(response);
