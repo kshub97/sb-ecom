@@ -3,13 +3,15 @@ package com.ecommerce.project.service;
 import com.ecommerce.project.exception.APIException;
 import com.ecommerce.project.exception.ResourceNotFoundException;
 import com.ecommerce.project.model.*;
-import com.ecommerce.project.payload.OrderItemDTO;
-import com.ecommerce.project.payload.OrderRequestDTO;
-import com.ecommerce.project.payload.OrderResponseDTO;
+import com.ecommerce.project.payload.*;
 import com.ecommerce.project.repositories.*;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -67,7 +69,7 @@ public class OrderServiceImpl implements OrderService{
         order.setEmail(loggedInEmail);
         order.setOrderDate(LocalDate.now());
         order.setTotalAmount(userCart.getTotalPrice());
-        order.setOrderStatus("Order Accepted !");
+        order.setOrderStatus("Accepted");
         order.setAddress(address);
         
         //Set order in payment entity as it is bidirectional
@@ -115,4 +117,36 @@ public class OrderServiceImpl implements OrderService{
         orderResponseDTO.setAddressId(addressId);
         return orderResponseDTO;
     }
+
+    @Override
+    public OrderReceivedResponseDTO getAllReceivedOrder(Integer pageNumber,
+                                                        Integer pageSize, String sortOrder, String sortBy) {
+        Sort sortByAndOrder=sortOrder.equalsIgnoreCase("asc")
+                ?Sort.by(sortBy).ascending():Sort.by(sortBy).descending();
+        Pageable pageDetails= PageRequest.of(pageNumber,pageSize,sortByAndOrder);
+        Page<Order> pageOrders = orderRepository.findAll(pageDetails); //so in result pagination will be included
+        List<Order> orders = pageOrders.getContent(); //get order data in list
+        //Now using mapper convert each to orderResponseDTO
+        List<OrderResponseDTO> orderDTOS = orders.stream().map((order) -> modelMapper.map(order, OrderResponseDTO.class)).toList();
+
+        OrderReceivedResponseDTO orderReceivedResponseDTO = new OrderReceivedResponseDTO();
+            orderReceivedResponseDTO.setContent(orderDTOS);
+            orderReceivedResponseDTO.setPageNumber(pageOrders.getNumber());
+            orderReceivedResponseDTO.setTotalPages(pageOrders.getTotalPages());
+            orderReceivedResponseDTO.setTotalElements(pageOrders.getTotalElements());
+            orderReceivedResponseDTO.setPageSize(pageOrders.getSize());
+            orderReceivedResponseDTO.setLastPage(pageOrders.isLast());
+
+        return orderReceivedResponseDTO;
+    }
+
+    @Override
+    public OrderResponseDTO updateOrder(Long orderId, String orderStatusUpdateDTO) {
+        Order order = orderRepository.findById(orderId).
+                orElseThrow(() -> new ResourceNotFoundException("Order", "orderId", orderId));
+        order.setOrderStatus(orderStatusUpdateDTO);
+        orderRepository.save(order);
+       return modelMapper.map(order, OrderResponseDTO.class);
+    }
+
 }

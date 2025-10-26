@@ -1,8 +1,7 @@
 package com.ecommerce.project.controller;
 
-import com.ecommerce.project.payload.OrderRequestDTO;
-import com.ecommerce.project.payload.OrderResponseDTO;
-import com.ecommerce.project.payload.StripePaymentDTO;
+import com.ecommerce.project.configuration.AppConstants;
+import com.ecommerce.project.payload.*;
 import com.ecommerce.project.service.OrderService;
 import com.ecommerce.project.service.StripeService;
 import com.ecommerce.project.util.AuthUtil;
@@ -48,4 +47,21 @@ public class OrderController {
         PaymentIntent paymentIntent = stripeService.paymentIntent(stripePaymentDTO);
         return new ResponseEntity<>(paymentIntent.getClientSecret(),HttpStatus.CREATED);
     }
+
+    @RequestMapping(method = RequestMethod.GET,value = "/admin/orders")
+    public ResponseEntity<OrderReceivedResponseDTO> getAllReceivedOrder(@RequestParam(value = "pageNumber",defaultValue = AppConstants.PAGE_NUMBER) Integer pageNumber,
+                                                                        @RequestParam(value = "pageSize",defaultValue = AppConstants.PAGE_SIZE) Integer pageSize,
+                                                                        @RequestParam(value = "sortBy",defaultValue = AppConstants.SORT_ORDER_BY) String sortBy,
+                                                                        @RequestParam(value = "sortOrder",defaultValue = AppConstants.SORT_DIR) String sortOrder) {
+        OrderReceivedResponseDTO orderReceivedResponseDTO = orderService.getAllReceivedOrder(pageNumber, pageSize, sortOrder, sortBy);
+        return new ResponseEntity<>(orderReceivedResponseDTO,HttpStatus.OK);
+    }
+
+    @PutMapping("/admin/orders/{orderId}/status")
+    public ResponseEntity<OrderResponseDTO> updateOrderStatus(@PathVariable Long orderId,
+                                                    @RequestBody OrderStatusUpdateDTO orderStatusUpdateDTO) throws StripeException {
+        OrderResponseDTO orderResponseDTO = orderService.updateOrder(orderId, orderStatusUpdateDTO.getUpdateStatus());
+        return new ResponseEntity<OrderResponseDTO>(orderResponseDTO,HttpStatus.OK);
+    }
+
 }
