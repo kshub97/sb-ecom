@@ -7,6 +7,7 @@ import com.ecommerce.project.model.Product;
 import com.ecommerce.project.payload.ProductDTO;
 import com.ecommerce.project.payload.ProductResponseDTO;
 import com.ecommerce.project.repositories.CategoryRepository;
+import com.ecommerce.project.repositories.OrderItemRepository;
 import com.ecommerce.project.repositories.ProductRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,8 @@ public class ProductServiceImpl implements ProductService{
 
     @Value("${image.base.url}")
     private String imageBaseUrl;
+    @Autowired
+    private OrderItemRepository orderItemRepository;
 
     @Override
     public ProductDTO addProduct(Long categoryId, ProductDTO productDTO) {
@@ -169,6 +172,11 @@ public class ProductServiceImpl implements ProductService{
     public ProductDTO deleteProduct(Long productId) {
         Product productFromDb = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "ProductId", productId));
+        boolean existsInOrders  = orderItemRepository.existsById(productId);
+//should NOT delete a product if it’s already part of an order, because those orders are historical records.
+        if (existsInOrders) {
+            throw new APIException("Cannot delete product: It has existing order references");
+        }
         productRepository.delete(productFromDb);
         return modelMapper.map(productFromDb, ProductDTO.class);
     }
@@ -181,6 +189,38 @@ public class ProductServiceImpl implements ProductService{
         productFromDb.setImage(fileName);
         Product savedProduct = productRepository.save(productFromDb);
         return modelMapper.map(savedProduct, ProductDTO.class);
+    }
+
+    @Override
+    public ProductResponseDTO getAllProductsForAdmin(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        // Create Pageable with dynamic sorting
+        Sort sortByAndOrder=sortOrder.equalsIgnoreCase("asc")
+                ?Sort.by(sortBy).ascending():Sort.by(sortBy).descending();
+        Pageable pageDetails= PageRequest.of(pageNumber,pageSize,sortByAndOrder);
+
+        // Fetch page from repository
+        Page<Product> productPages = productRepository.findAll(pageDetails);  //keep 1st arg as specification as it is expected in JpaSpecification
+        List<Product> productPagesContent = productPages.getContent();
+        if (productPagesContent.isEmpty()) throw new APIException("No product exists!");
+
+        // Map entities to DTOs
+        List<ProductDTO> productDTOS = productPagesContent.stream().map(
+                product -> {
+                    ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
+                    productDTO.setImage(ConstructImageUrl(productDTO.getImage()));
+                    return productDTO;
+                }
+        ).toList();
+
+        // Prepare response
+        ProductResponseDTO productResponseDTO = new ProductResponseDTO();
+        productResponseDTO.setContent(productDTOS);
+        productResponseDTO.setPageNumber(productPages.getNumber());
+        productResponseDTO.setTotalPages(productPages.getTotalPages());
+        productResponseDTO.setPageSize(productPages.getSize());
+        productResponseDTO.setTotalElements(productPages.getTotalElements());
+        productResponseDTO.setLastPage(productPages.isLast());
+        return productResponseDTO;
     }
 
 }

@@ -80,5 +80,22 @@ public class ProductController {
 
     }
 
+    @GetMapping("/admin/products")
+    public ResponseEntity<ProductResponseDTO> getAllProductsForAdmin( @RequestParam(value = "pageNumber",defaultValue = AppConstants.PAGE_NUMBER,required = false) Integer pageNumber,
+                                                              @RequestParam(value = "pageSize",defaultValue = AppConstants.PAGE_SIZE,required = false) Integer pageSize,
+                                                              @RequestParam(value = "sortBy",defaultValue = AppConstants.SORT_PRODUCT_BY,required = false) String sortBy,
+                                                              @RequestParam(value = "sortOrder",defaultValue = AppConstants.SORT_DIR,required = false) String sortOrder){
+        ProductResponseDTO productResponse = productService.getAllProductsForAdmin(pageNumber,pageSize,sortBy,sortOrder);
+        return new ResponseEntity<>(productResponse, HttpStatus.OK);
+    }
+
+    @PutMapping("admin/products/{productId}/image")
+    public  ResponseEntity<ProductDTO> updateAdminProductImage(@PathVariable Long productId,
+                                                          @RequestParam("image")MultipartFile file) throws IOException {
+        ProductDTO updatedProduct = productService.updateProductImage(productId,file);
+        return new ResponseEntity<>(updatedProduct,HttpStatus.OK);
+
+    }
+
 
 }
