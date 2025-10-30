@@ -47,4 +47,26 @@ public class CategoryController {
         CategoryRequestDTO updateCategoryDTO = categoryService.updateCategory(categoryRequestDTO, categoryId);
             return new ResponseEntity<>(updateCategoryDTO,HttpStatus.OK);
     }
+
+    @RequestMapping(method = RequestMethod.GET,value = "/admin/categories")
+    public ResponseEntity<CategoryResponseDTO> getAllCategoriesForAdmin(@RequestParam(value = "pageNumber",defaultValue = AppConstants.PAGE_NUMBER) Integer pageNumber,
+                                                                @RequestParam(value = "pageSize",defaultValue = AppConstants.PAGE_SIZE) Integer pageSize,
+                                                                @RequestParam(value = "sortBy",defaultValue = AppConstants.SORT_CATEGORY_BY) String sortBy,
+                                                                @RequestParam(value = "sortOrder",defaultValue = AppConstants.SORT_DIR) String sortOrder) {
+        CategoryResponseDTO allCategories = categoryService.getAllCategories(pageNumber, pageSize, sortOrder, sortBy);
+        return new ResponseEntity<>(allCategories,HttpStatus.OK);
+    }
+
+    @PutMapping("/admin/categories/{categoryId}")
+    public ResponseEntity<CategoryRequestDTO> updateCategoryForAdmin(@Valid @RequestBody CategoryRequestDTO categoryRequestDTO, @PathVariable Long categoryId){
+        CategoryRequestDTO updateCategoryDTO = categoryService.updateCategory(categoryRequestDTO, categoryId);
+        return new ResponseEntity<>(updateCategoryDTO,HttpStatus.OK);
+    }
+
+    @PostMapping("/admin/categories")
+    public ResponseEntity<CategoryRequestDTO> createCategoryForAdmin(@Valid @RequestBody CategoryRequestDTO categoryRequestDTO){;
+        CategoryRequestDTO savedCategoryDTO = categoryService.createCategory(categoryRequestDTO);
+        return  new ResponseEntity<>(savedCategoryDTO,HttpStatus.CREATED);
+    }
+
 }
